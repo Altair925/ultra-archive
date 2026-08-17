@@ -74,11 +74,12 @@
 
   .grid{
     display:grid;
-    grid-template-columns:1fr 1fr;
+    grid-template-columns:repeat(16, 1fr);
     gap:22px;
   }
   @media (max-width:760px){
     .grid{grid-template-columns:1fr;}
+    .card, .card.card-wide{ grid-column:auto; }
   }
 
   .card{
@@ -88,6 +89,7 @@
     padding:22px 22px 10px;
     position:relative;
     overflow:hidden;
+    grid-column:span 8;
   }
   .card::before{
     content:"";
@@ -108,7 +110,7 @@
   .card-title{
     font-family:'Cinzel', serif;
     font-weight:700;
-    font-size:17px;
+    font-size:18px;
     letter-spacing:0.06em;
   }
 
@@ -156,9 +158,7 @@
   }
 
   .card.card-wide{
-    grid-column:1 / -1;
-    max-width:586px;
-    margin:0 auto;
+    grid-column:4 / span 10;
     box-shadow:0 0 0 1px rgba(255,46,140,0.10), 0 0 36px rgba(255,209,102,0.08), 0 0 50px rgba(255,46,140,0.08);
   }
   .card.card-wide::before{
@@ -167,29 +167,27 @@
   .card.card-wide .card-title{
     font-style:italic;
     font-weight:700;
-    font-size:23px;
+    font-size:24px;
     letter-spacing:0.05em;
+    padding-right:10px;
     background:linear-gradient(90deg, var(--c-SSS-a) 0%, var(--c-SSS-b) 100%);
     -webkit-background-clip:text;
     background-clip:text;
     color:transparent;
   }
-  @media (max-width:760px){
-    .card.card-wide{ max-width:none; }
-  }
 
   .row{
     display:grid;
-    grid-template-columns:100px 1fr 46px 60px;
+    grid-template-columns:112px 1fr 54px 70px;
     align-items:center;
     gap:12px;
-    padding:11px 0;
+    padding:13px 0;
     border-bottom:1px solid rgba(255,255,255,0.04);
   }
   .row:last-child{border-bottom:none;}
 
   .stat-label{
-    font-size:13px;
+    font-size:14px;
     font-weight:500;
     color:var(--text);
     letter-spacing:0.01em;
@@ -201,7 +199,7 @@
     border-bottom:1px dashed var(--muted-2);
     color:var(--text);
     font-family:'Space Grotesk', sans-serif;
-    font-size:12px;
+    font-size:13px;
     font-weight:500;
     line-height:1.2;
     padding:2px 0 3px;
@@ -306,10 +304,10 @@
   .grade-letter{
     font-family:'Cinzel', serif;
     font-weight:700;
-    font-size:15px;
-    min-width:26px;
+    font-size:17px;
+    min-width:30px;
     text-align:center;
-    padding:3px 4px;
+    padding:4px 6px;
     border-radius:4px;
     border:1px solid currentColor;
     color:var(--grade-color,#516b7d);
@@ -319,15 +317,15 @@
     letter-spacing:0.02em;
   }
   .grade-extra{
-    width:20px;
-    height:24px;
+    width:23px;
+    height:27px;
     background:var(--track);
     border:1px solid var(--card-border);
     border-radius:3px;
     color:var(--text);
     text-align:center;
     font-family:'JetBrains Mono', monospace;
-    font-size:12px;
+    font-size:13px;
     font-weight:700;
     padding:0;
     outline:none;
@@ -359,6 +357,9 @@
       linear-gradient(180deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0) 42%, rgba(0,0,0,0.18) 100%),
       linear-gradient(90deg, var(--c-SSS-a), var(--c-SSS-b));
   }
+  .slider-wrap.is-overflow .slider-fill{
+    box-shadow:0 0 10px var(--c-SSS-a), 0 0 22px var(--c-SSS-b), 0 1px 0 rgba(0,0,0,0.25);
+  }
 
   .foot{
     text-align:center;
@@ -368,19 +369,104 @@
     color:var(--muted-2);
     letter-spacing:0.08em;
   }
+
+  /* discreet hex color panel, unrelated to the tables */
+  .color-toggle{
+    position:fixed;
+    bottom:20px;
+    right:20px;
+    width:34px;
+    height:34px;
+    border-radius:50%;
+    background:var(--card);
+    border:1px solid var(--card-border);
+    color:var(--muted);
+    font-size:15px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    opacity:0.5;
+    transition:opacity .15s ease;
+    z-index:100;
+  }
+  .color-toggle:hover{opacity:1;}
+
+  .color-panel{
+    position:fixed;
+    bottom:62px;
+    right:20px;
+    width:220px;
+    max-height:70vh;
+    overflow-y:auto;
+    background:var(--card);
+    border:1px solid var(--card-border);
+    border-radius:8px;
+    padding:14px;
+    z-index:100;
+    box-shadow:0 10px 28px rgba(0,0,0,0.55);
+  }
+  .color-panel.hidden{display:none;}
+  .color-panel h2{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin:0 0 10px;
+  }
+  .color-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:7px;
+  }
+  .color-row label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    color:var(--muted);
+    width:40px;
+    flex:none;
+  }
+  .color-swatch{
+    width:15px;
+    height:15px;
+    border-radius:3px;
+    flex:none;
+    border:1px solid rgba(255,255,255,0.15);
+  }
+  .color-row input[type="text"]{
+    flex:1;
+    min-width:0;
+    background:var(--track);
+    border:1px solid var(--card-border);
+    border-radius:4px;
+    color:var(--text);
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    padding:4px 6px;
+    outline:none;
+  }
+  .color-row input[type="text"]:focus{border-color:var(--c-A);}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="masthead">
     <div class="eyebrow">Sistema de clasificación · F — SSS</div>
-    <h1>Ficha de Rangos</h1>
+    <h1>ULTRA-ANALISIS</h1>
     <p class="sub">Cinco conjuntos de estadísticas con tope creciente. Cada rango se recalcula en vivo a partir del valor del control deslizante.</p>
   </div>
 
   <div class="grid" id="grid"></div>
 
   <div class="foot">AJUSTA · DESLIZA · CLASIFICA</div>
+</div>
+
+<button class="color-toggle" id="colorToggle" type="button" aria-label="Ajustes de color" title="Ajustes de color">⚙</button>
+<div class="color-panel hidden" id="colorPanel">
+  <h2>Colores (hex)</h2>
+  <div id="colorFields"></div>
 </div>
 
 <script>
@@ -400,6 +486,7 @@ const gradeColorVar = {
 };
 const gradeGlow = { S:"rgba(239,91,76,0.5)", SS:"rgba(192,132,252,0.65)", SSS:"rgba(255,46,140,0.5)" };
 const colorMap = { F:"#5c6773", E:"#4a7f95", D:"#2f96a6", C:"#24ab8a", B:"#2ec47a", A:"#f2c230", S:"#ef5b4c", SS:"#c084fc", SSS:"#ff2e8c" };
+const allRefreshers = [];
 
 const grid = document.getElementById('grid');
 
@@ -558,8 +645,9 @@ groups.forEach((group) => {
       r.letterEl.classList.toggle('tier-sss', displayLetter === 'SSS');
       r.sliderWrap.classList.toggle('tier-sss', displayLetter === 'SSS');
       r.fill.classList.toggle('tier-sss', displayLetter === 'SSS');
+      r.sliderWrap.classList.toggle('is-overflow', sliderMax > cap && v > cap);
 
-      const pct = sliderMax === 0 ? 0 : (v / sliderMax);
+      const pct = cap === 0 ? 0 : Math.min(v, cap) / cap;
       r.sliderWrap.style.setProperty('--thumb-color', displayColor);
       r.sliderWrap.style.setProperty('--thumb-glow', displayGlow);
       r.fill.style.width = `calc((100% - 16px) * ${pct} + 8px)`;
@@ -572,6 +660,71 @@ groups.forEach((group) => {
 
   switchInput.addEventListener('change', refreshCard);
   refreshCard();
+  allRefreshers.push(refreshCard);
+});
+
+// --- discreet hex color panel ---
+function getRootVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+const colorFieldsDefs = [
+  { key:'F', label:'F' }, { key:'E', label:'E' }, { key:'D', label:'D' },
+  { key:'C', label:'C' }, { key:'B', label:'B' }, { key:'A', label:'A' },
+  { key:'S', label:'S' }, { key:'SS', label:'SS' },
+  { key:'SSS-a', label:'SSS·A' }, { key:'SSS-b', label:'SSS·B' },
+];
+const hexPattern = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i;
+const colorFieldsHolder = document.getElementById('colorFields');
+
+colorFieldsDefs.forEach(({ key, label }) => {
+  const row = document.createElement('div');
+  row.className = 'color-row';
+
+  const lbl = document.createElement('label');
+  lbl.textContent = label;
+
+  const swatch = document.createElement('span');
+  swatch.className = 'color-swatch';
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.maxLength = 7;
+  input.spellcheck = false;
+
+  const initial = key === 'SSS-a' ? getRootVar('--c-SSS-a')
+                : key === 'SSS-b' ? getRootVar('--c-SSS-b')
+                : colorMap[key];
+  input.value = initial;
+  swatch.style.background = initial;
+
+  function apply(hex) {
+    swatch.style.background = hex;
+    if (key === 'SSS-a') {
+      document.documentElement.style.setProperty('--c-SSS-a', hex);
+    } else if (key === 'SSS-b') {
+      document.documentElement.style.setProperty('--c-SSS-b', hex);
+      colorMap.SSS = hex;
+    } else {
+      colorMap[key] = hex;
+      document.documentElement.style.setProperty('--c-' + key, hex);
+    }
+    allRefreshers.forEach((fn) => fn());
+  }
+
+  input.addEventListener('input', () => {
+    const v = input.value.trim();
+    if (hexPattern.test(v)) apply(v);
+  });
+
+  row.appendChild(lbl);
+  row.appendChild(swatch);
+  row.appendChild(input);
+  colorFieldsHolder.appendChild(row);
+});
+
+document.getElementById('colorToggle').addEventListener('click', () => {
+  document.getElementById('colorPanel').classList.toggle('hidden');
 });
 </script>
 </body>
