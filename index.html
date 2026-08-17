@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ficha de Rangos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0d1013;
+    --bg-vign:#131a20;
+    --card:#151b21;
+    --card-border:#26313b;
+    --track:#20272e;
+    --text:#dde7ec;
+    --muted:#7c8b96;
+    --muted-2:#4a5761;
+
+    --c-F:#5c6773;
+    --c-E:#4a7f95;
+    --c-D:#2f96a6;
+    --c-C:#24ab8a;
+    --c-B:#2ec47a;
+    --c-A:#f2c230;
+    --c-S:#ef5b4c;
+    --c-SS:#c084fc;
+    --c-SSS-a:#ffd166;
+    --c-SSS-b:#ff2e8c;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse at 50% -10%, var(--bg-vign) 0%, var(--bg) 55%);
+    color:var(--text);
+    font-family:'Space Grotesk', sans-serif;
+    min-height:100vh;
+    padding:48px 20px 80px;
+  }
+
+  .wrap{max-width:960px;margin:0 auto;}
+
+  .masthead{
+    text-align:center;
+    margin-bottom:52px;
+  }
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.32em;
+    color:var(--muted);
+    text-transform:uppercase;
+  }
+  h1{
+    font-family:'Cinzel', serif;
+    font-weight:700;
+    font-size:clamp(32px,5vw,48px);
+    letter-spacing:0.04em;
+    margin:10px 0 6px;
+    background:linear-gradient(180deg,#eef6f9 0%, #2ec47a 100%);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+  .sub{
+    color:var(--muted);
+    font-size:14px;
+    max-width:480px;
+    margin:0 auto;
+    line-height:1.5;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:22px;
+  }
+  @media (max-width:760px){
+    .grid{grid-template-columns:1fr;}
+  }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--card-border);
+    border-radius:6px;
+    padding:22px 22px 10px;
+    position:relative;
+    overflow:hidden;
+  }
+  .card::before{
+    content:"";
+    position:absolute;
+    top:0;left:0;right:0;
+    height:2px;
+    background:linear-gradient(90deg, transparent, var(--card-accent, #3d7c93), transparent);
+  }
+
+  .card-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:18px;
+    padding-bottom:12px;
+    border-bottom:1px solid var(--card-border);
+  }
+  .card-title{
+    font-family:'Cinzel', serif;
+    font-weight:700;
+    font-size:17px;
+    letter-spacing:0.06em;
+  }
+
+  /* discreet iOS-style toggle */
+  .mini-switch{
+    position:relative;
+    width:30px;
+    height:17px;
+    flex:none;
+  }
+  .mini-switch input{
+    position:absolute;
+    inset:0;
+    opacity:0;
+    margin:0;
+    cursor:pointer;
+    z-index:2;
+  }
+  .mini-switch .track{
+    position:absolute;
+    inset:0;
+    background:#242b32;
+    border:1px solid #313a43;
+    border-radius:999px;
+    transition:background-color .18s ease, border-color .18s ease;
+  }
+  .mini-switch .knob{
+    position:absolute;
+    top:2px;
+    left:2px;
+    width:11px;
+    height:11px;
+    border-radius:50%;
+    background:#6b7680;
+    box-shadow:0 1px 2px rgba(0,0,0,0.4);
+    transition:transform .18s ease, background-color .18s ease;
+  }
+  .mini-switch input:checked ~ .track{
+    background:var(--switch-color, #4a7f95);
+    border-color:transparent;
+  }
+  .mini-switch input:checked ~ .knob{
+    transform:translateX(13px);
+    background:#0d1013;
+  }
+
+  .card.card-wide{
+    grid-column:1 / -1;
+    max-width:586px;
+    margin:0 auto;
+    box-shadow:0 0 0 1px rgba(255,46,140,0.10), 0 0 36px rgba(255,209,102,0.08), 0 0 50px rgba(255,46,140,0.08);
+  }
+  .card.card-wide::before{
+    background:linear-gradient(90deg, transparent, var(--c-SSS-a) 30%, var(--c-SSS-b) 70%, transparent);
+  }
+  .card.card-wide .card-title{
+    font-style:italic;
+    font-weight:700;
+    font-size:23px;
+    letter-spacing:0.05em;
+    background:linear-gradient(90deg, var(--c-SSS-a) 0%, var(--c-SSS-b) 100%);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+  @media (max-width:760px){
+    .card.card-wide{ max-width:none; }
+  }
+
+  .row{
+    display:grid;
+    grid-template-columns:100px 1fr 46px 60px;
+    align-items:center;
+    gap:12px;
+    padding:11px 0;
+    border-bottom:1px solid rgba(255,255,255,0.04);
+  }
+  .row:last-child{border-bottom:none;}
+
+  .stat-label{
+    font-size:13px;
+    font-weight:500;
+    color:var(--text);
+    letter-spacing:0.01em;
+  }
+  .stat-input{
+    width:100%;
+    background:transparent;
+    border:none;
+    border-bottom:1px dashed var(--muted-2);
+    color:var(--text);
+    font-family:'Space Grotesk', sans-serif;
+    font-size:12px;
+    font-weight:500;
+    line-height:1.2;
+    padding:2px 0 3px;
+    outline:none;
+    white-space:normal;
+    word-break:break-word;
+    overflow:hidden;
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    cursor:text;
+  }
+  .stat-input[contenteditable]:empty::before{
+    content:attr(data-placeholder);
+    color:var(--muted-2);
+  }
+  .stat-input.has-text{border-bottom-color:transparent;}
+  .stat-input:focus{border-bottom-color:var(--c-A);}
+
+  /* slider */
+  .slider-wrap{
+    position:relative;
+    height:24px;
+    display:flex;
+    align-items:center;
+  }
+  .slider-track{
+    position:absolute;
+    left:0;right:0;
+    height:16px;
+    border-radius:8px;
+    background:var(--track);
+    box-shadow:inset 0 2px 3px rgba(0,0,0,0.55), inset 0 -1px 0 rgba(255,255,255,0.03);
+  }
+  .slider-fill{
+    position:absolute;
+    left:0;
+    height:16px;
+    border-radius:8px;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0) 42%, rgba(0,0,0,0.18) 100%),
+      var(--fill-color,#2a96ab);
+    width:0%;
+    pointer-events:none;
+    box-shadow:0 1px 0 rgba(0,0,0,0.25);
+    transition:background-color .15s ease;
+  }
+  .slider-input{
+    position:relative;
+    z-index:2;
+    width:100%;
+    height:24px;
+    margin:0;
+    background:transparent;
+    -webkit-appearance:none;
+    appearance:none;
+    cursor:pointer;
+  }
+  .slider-input::-webkit-slider-runnable-track{
+    background:transparent;
+    height:16px;
+  }
+  .slider-input::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    appearance:none;
+    width:16px;height:16px;
+    margin-top:0;
+    border-radius:50%;
+    background:var(--thumb-color,#2a96ab);
+    border:2px solid #0d1013;
+    box-shadow:0 0 0 1px var(--thumb-color,#2a96ab), 0 1px 2px rgba(0,0,0,0.5), 0 0 10px var(--thumb-glow,transparent);
+    transition:box-shadow .15s ease;
+  }
+  .slider-input::-moz-range-track{
+    background:transparent;
+    height:16px;
+  }
+  .slider-input::-moz-range-thumb{
+    width:16px;height:16px;
+    border-radius:50%;
+    background:var(--thumb-color,#2a96ab);
+    border:2px solid #0d1013;
+    box-shadow:0 0 0 1px var(--thumb-color,#2a96ab), 0 1px 2px rgba(0,0,0,0.5), 0 0 10px var(--thumb-glow,transparent);
+  }
+  .slider-input::-moz-focus-outer{border:0;}
+
+  .value-frac{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    color:var(--muted);
+    text-align:right;
+    white-space:nowrap;
+  }
+  .value-frac b{color:var(--text);font-weight:700;}
+
+  .grade{
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:3px;
+  }
+  .grade-letter{
+    font-family:'Cinzel', serif;
+    font-weight:700;
+    font-size:15px;
+    min-width:26px;
+    text-align:center;
+    padding:3px 4px;
+    border-radius:4px;
+    border:1px solid currentColor;
+    color:var(--grade-color,#516b7d);
+    text-shadow:0 0 10px var(--grade-glow, transparent);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,0.03);
+    transition:color .15s ease, text-shadow .15s ease;
+    letter-spacing:0.02em;
+  }
+  .grade-extra{
+    width:20px;
+    height:24px;
+    background:var(--track);
+    border:1px solid var(--card-border);
+    border-radius:3px;
+    color:var(--text);
+    text-align:center;
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    font-weight:700;
+    padding:0;
+    outline:none;
+  }
+  .grade-extra:focus{border-color:var(--c-A);}
+
+  @keyframes plusUltraPulse{
+    0%,100%{ filter:brightness(1); }
+    50%{ filter:brightness(1.45); }
+  }
+  .grade-letter.tier-sss{
+    background:linear-gradient(135deg, var(--c-SSS-a), var(--c-SSS-b));
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    border-color:var(--c-SSS-b);
+    text-shadow:none;
+  }
+  .slider-wrap.tier-sss .slider-input::-webkit-slider-thumb{
+    background:linear-gradient(135deg, var(--c-SSS-a), var(--c-SSS-b));
+    box-shadow:0 0 0 1px var(--c-SSS-b), 0 1px 2px rgba(0,0,0,0.5), 0 0 9px var(--c-SSS-a), 0 0 14px var(--c-SSS-b);
+  }
+  .slider-wrap.tier-sss .slider-input::-moz-range-thumb{
+    background:linear-gradient(135deg, var(--c-SSS-a), var(--c-SSS-b));
+    box-shadow:0 0 0 1px var(--c-SSS-b), 0 1px 2px rgba(0,0,0,0.5), 0 0 9px var(--c-SSS-a), 0 0 14px var(--c-SSS-b);
+  }
+  .slider-fill.tier-sss{
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0) 42%, rgba(0,0,0,0.18) 100%),
+      linear-gradient(90deg, var(--c-SSS-a), var(--c-SSS-b));
+  }
+
+  .foot{
+    text-align:center;
+    margin-top:36px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    color:var(--muted-2);
+    letter-spacing:0.08em;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="masthead">
+    <div class="eyebrow">Sistema de clasificación · F — SSS</div>
+    <h1>Ficha de Rangos</h1>
+    <p class="sub">Cinco conjuntos de estadísticas con tope creciente. Cada rango se recalcula en vivo a partir del valor del control deslizante.</p>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="foot">AJUSTA · DESLIZA · CLASIFICA</div>
+</div>
+
+<script>
+const groups = [
+  { title:"BASE",  max:4, letters:["F","E","D","C","B"] },
+  { title:"EVO 1", max:5, letters:["F","E","D","C","B","A"] },
+  { title:"EVO 2", max:6, letters:["F","E","D","C","B","A","S"] },
+  { title:"EVO 3", max:7, letters:["F","E","D","C","B","A","S","SS"] },
+  { title:"PLUS ULTRA!", cap:8, sliderMax:9, letters:["F","E","D","C","B","A","S","SS","SSS"], wide:true },
+];
+
+const baseStats = ["Poder","Velocidad","Técnica","Inteligencia"];
+
+const gradeColorVar = {
+  F:"--c-F", E:"--c-E", D:"--c-D", C:"--c-C",
+  B:"--c-B", A:"--c-A", S:"--c-S", SS:"--c-SS", SSS:"--c-SSS"
+};
+const gradeGlow = { S:"rgba(239,91,76,0.5)", SS:"rgba(192,132,252,0.65)", SSS:"rgba(255,46,140,0.5)" };
+const colorMap = { F:"#5c6773", E:"#4a7f95", D:"#2f96a6", C:"#24ab8a", B:"#2ec47a", A:"#f2c230", S:"#ef5b4c", SS:"#c084fc", SSS:"#ff2e8c" };
+
+const grid = document.getElementById('grid');
+
+groups.forEach((group) => {
+  const cap = group.cap ?? group.max;
+  const sliderMax = group.sliderMax ?? group.max;
+
+  const card = document.createElement('div');
+  card.className = 'card' + (group.wide ? ' card-wide' : '');
+
+  const head = document.createElement('div');
+  head.className = 'card-head';
+
+  const titleSpan = document.createElement('span');
+  titleSpan.className = 'card-title';
+  titleSpan.textContent = group.title;
+  head.appendChild(titleSpan);
+
+  const switchLabel = document.createElement('label');
+  switchLabel.className = 'mini-switch';
+  const switchInput = document.createElement('input');
+  switchInput.type = 'checkbox';
+  switchInput.setAttribute('aria-label', `Unificar colores de ${group.title}`);
+  const switchTrack = document.createElement('span');
+  switchTrack.className = 'track';
+  const switchKnob = document.createElement('span');
+  switchKnob.className = 'knob';
+  switchLabel.appendChild(switchInput);
+  switchLabel.appendChild(switchTrack);
+  switchLabel.appendChild(switchKnob);
+  head.appendChild(switchLabel);
+
+  card.appendChild(head);
+
+  const rowsHolder = document.createElement('div');
+  const rows = []; // per-row refs for this card
+
+  for (let si = 0; si < 5; si++) {
+    const isCustom = si === 4;
+    const row = document.createElement('div');
+    row.className = 'row';
+
+    // label cell
+    const labelCell = document.createElement('div');
+    if (isCustom) {
+      const inp = document.createElement('div');
+      inp.className = 'stat-input';
+      inp.contentEditable = 'true';
+      inp.setAttribute('data-placeholder', 'Estadística');
+      inp.addEventListener('paste', (e) => {
+        e.preventDefault();
+        const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+        document.execCommand('insertText', false, text);
+      });
+      inp.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); inp.blur(); }
+      });
+      inp.addEventListener('input', () => {
+        inp.classList.toggle('has-text', inp.textContent.trim().length > 0);
+      });
+      labelCell.appendChild(inp);
+    } else {
+      const span = document.createElement('span');
+      span.className = 'stat-label';
+      span.textContent = baseStats[si];
+      labelCell.appendChild(span);
+    }
+    row.appendChild(labelCell);
+
+    // slider cell (track + fill + native input layered)
+    const sliderWrap = document.createElement('div');
+    sliderWrap.className = 'slider-wrap';
+
+    const track = document.createElement('div');
+    track.className = 'slider-track';
+
+    const fill = document.createElement('div');
+    fill.className = 'slider-fill';
+
+    const range = document.createElement('input');
+    range.className = 'slider-input';
+    range.type = 'range';
+    range.min = 0;
+    range.max = sliderMax;
+    range.step = 1;
+    range.value = 0;
+
+    sliderWrap.appendChild(track);
+    sliderWrap.appendChild(fill);
+    sliderWrap.appendChild(range);
+    row.appendChild(sliderWrap);
+
+    // value / max cell
+    const frac = document.createElement('div');
+    frac.className = 'value-frac';
+    frac.innerHTML = `<b>0</b>/${cap}`;
+    row.appendChild(frac);
+
+    // grade cell
+    const gradeWrap = document.createElement('div');
+    gradeWrap.className = 'grade';
+
+    const letterEl = document.createElement('span');
+    letterEl.className = 'grade-letter';
+
+    const extraInput = document.createElement('input');
+    extraInput.className = 'grade-extra';
+    extraInput.type = 'text';
+    extraInput.maxLength = 1;
+    extraInput.setAttribute('aria-label', 'Modificador de rango');
+
+    gradeWrap.appendChild(letterEl);
+    gradeWrap.appendChild(extraInput);
+    row.appendChild(gradeWrap);
+
+    rows.push({ range, frac, fill, sliderWrap, letterEl });
+    range.addEventListener('input', () => refreshCard());
+    rowsHolder.appendChild(row);
+  }
+
+  card.appendChild(rowsHolder);
+  grid.appendChild(card);
+
+  function letterAt(v) {
+    return group.letters[Math.min(v, group.letters.length - 1)];
+  }
+
+  function refreshCard() {
+    const unify = switchInput.checked;
+
+    // find the row with the highest current value (best rank) in this card
+    let bestIdx = 0;
+    rows.forEach((r) => {
+      if (parseInt(r.range.value, 10) > parseInt(rows[bestIdx].range.value, 10)) bestIdx = rows.indexOf(r);
+    });
+    const bestValue = parseInt(rows[bestIdx].range.value, 10);
+    const bestLetter = letterAt(bestValue);
+    const bestColor = colorMap[bestLetter];
+    const bestGlow = gradeGlow[bestLetter] || 'transparent';
+
+    rows.forEach((r) => {
+      const v = parseInt(r.range.value, 10);
+      r.frac.innerHTML = `<b>${v}</b>/${cap}`;
+      const letter = letterAt(v);
+      r.letterEl.textContent = letter;
+
+      const ownColor = colorMap[letter];
+      const ownGlow = gradeGlow[letter] || 'transparent';
+
+      const displayColor = unify ? bestColor : ownColor;
+      const displayGlow = unify ? bestGlow : ownGlow;
+      const displayLetter = unify ? bestLetter : letter;
+
+      r.letterEl.style.setProperty('--grade-color', displayColor);
+      r.letterEl.style.setProperty('--grade-glow', displayGlow);
+      r.letterEl.classList.toggle('tier-sss', displayLetter === 'SSS');
+      r.sliderWrap.classList.toggle('tier-sss', displayLetter === 'SSS');
+      r.fill.classList.toggle('tier-sss', displayLetter === 'SSS');
+
+      const pct = sliderMax === 0 ? 0 : (v / sliderMax);
+      r.sliderWrap.style.setProperty('--thumb-color', displayColor);
+      r.sliderWrap.style.setProperty('--thumb-glow', displayGlow);
+      r.fill.style.width = `calc((100% - 16px) * ${pct} + 8px)`;
+      r.fill.style.setProperty('--fill-color', displayColor);
+    });
+
+    card.style.setProperty('--card-accent', unify ? bestColor : colorMap[group.letters[group.letters.length - 1]]);
+    switchLabel.style.setProperty('--switch-color', bestColor);
+  }
+
+  switchInput.addEventListener('change', refreshCard);
+  refreshCard();
+});
+</script>
+</body>
+</html>
