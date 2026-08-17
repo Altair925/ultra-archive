@@ -74,7 +74,7 @@
 
   .grid{
     display:grid;
-    grid-template-columns:repeat(16, 1fr);
+    grid-template-columns:repeat(32, 1fr);
     gap:22px;
   }
   @media (max-width:760px){
@@ -89,7 +89,7 @@
     padding:22px 22px 10px;
     position:relative;
     overflow:hidden;
-    grid-column:span 8;
+    grid-column:span 16;
   }
   .card::before{
     content:"";
@@ -158,7 +158,7 @@
   }
 
   .card.card-wide{
-    grid-column:4 / span 10;
+    grid-column:6 / span 22;
     box-shadow:0 0 0 1px rgba(255,46,140,0.10), 0 0 36px rgba(255,209,102,0.08), 0 0 50px rgba(255,46,140,0.08);
   }
   .card.card-wide::before{
@@ -361,6 +361,27 @@
     box-shadow:0 0 10px var(--c-SSS-a), 0 0 22px var(--c-SSS-b), 0 1px 0 rgba(0,0,0,0.25);
   }
 
+  .shatter{
+    position:absolute;
+    top:50%;
+    width:56px;
+    height:56px;
+    pointer-events:none;
+    z-index:3;
+    display:none;
+  }
+  .slider-wrap.is-overflow .shatter{ display:block; }
+  .shatter svg polygon{
+    fill:rgba(150,161,172,0.16);
+    stroke:rgba(150,161,172,0.75);
+    stroke-width:1.3;
+    stroke-linejoin:round;
+  }
+  .shatter svg polygon.hl{
+    fill:rgba(255,255,255,0.7);
+    stroke:rgba(255,255,255,0.95);
+  }
+
   .foot{
     text-align:center;
     margin-top:36px;
@@ -448,6 +469,21 @@
     outline:none;
   }
   .color-row input[type="text"]:focus{border-color:var(--c-A);}
+  .color-reset{
+    width:100%;
+    margin-top:4px;
+    padding:7px 0;
+    background:var(--track);
+    border:1px solid var(--card-border);
+    border-radius:4px;
+    color:var(--muted);
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.04em;
+    cursor:pointer;
+    transition:color .15s ease, border-color .15s ease;
+  }
+  .color-reset:hover{color:var(--text); border-color:var(--muted-2);}
 </style>
 </head>
 <body>
@@ -467,6 +503,7 @@
 <div class="color-panel hidden" id="colorPanel">
   <h2>Colores (hex)</h2>
   <div id="colorFields"></div>
+  <button type="button" class="color-reset" id="colorReset">Restablecer originales</button>
 </div>
 
 <script>
@@ -487,6 +524,15 @@ const gradeColorVar = {
 const gradeGlow = { S:"rgba(239,91,76,0.5)", SS:"rgba(192,132,252,0.65)", SSS:"rgba(255,46,140,0.5)" };
 const colorMap = { F:"#5c6773", E:"#4a7f95", D:"#2f96a6", C:"#24ab8a", B:"#2ec47a", A:"#f2c230", S:"#ef5b4c", SS:"#c084fc", SSS:"#ff2e8c" };
 const allRefreshers = [];
+const shardPoints = [
+  "26,10 34,4 30,18",
+  "40,8 52,14 42,20",
+  "46,24 60,22 50,34",
+  "44,38 58,44 46,50",
+  "28,46 36,58 20,54",
+  "14,40 6,50 16,52",
+  "10,20 2,26 12,30",
+];
 
 const grid = document.getElementById('grid');
 
@@ -566,6 +612,34 @@ groups.forEach((group) => {
     const fill = document.createElement('div');
     fill.className = 'slider-fill';
 
+    if (sliderMax > cap) {
+      track.style.right = 'auto';
+      track.style.width = `calc((100% - 16px) * ${cap / sliderMax} + 8px)`;
+
+      const shatter = document.createElement('div');
+      shatter.className = 'shatter';
+      shatter.style.left = `calc((100% - 16px) * ${cap / sliderMax} + 8px)`;
+      const angle = Math.floor(Math.random() * 360);
+      shatter.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
+
+      const svgNS = 'http://www.w3.org/2000/svg';
+      const svg = document.createElementNS(svgNS, 'svg');
+      svg.setAttribute('viewBox', '0 0 64 64');
+      svg.setAttribute('width', '56');
+      svg.setAttribute('height', '56');
+      shardPoints.forEach((pts) => {
+        const poly = document.createElementNS(svgNS, 'polygon');
+        poly.setAttribute('points', pts);
+        if (Math.random() < 0.4) poly.classList.add('hl');
+        svg.appendChild(poly);
+      });
+      shatter.appendChild(svg);
+      sliderWrap.appendChild(shatter);
+    }
+
+    sliderWrap.appendChild(track);
+    sliderWrap.appendChild(fill);
+
     const range = document.createElement('input');
     range.className = 'slider-input';
     range.type = 'range';
@@ -574,8 +648,6 @@ groups.forEach((group) => {
     range.step = 1;
     range.value = 0;
 
-    sliderWrap.appendChild(track);
-    sliderWrap.appendChild(fill);
     sliderWrap.appendChild(range);
     row.appendChild(sliderWrap);
 
@@ -647,7 +719,7 @@ groups.forEach((group) => {
       r.fill.classList.toggle('tier-sss', displayLetter === 'SSS');
       r.sliderWrap.classList.toggle('is-overflow', sliderMax > cap && v > cap);
 
-      const pct = cap === 0 ? 0 : Math.min(v, cap) / cap;
+      const pct = sliderMax === 0 ? 0 : v / sliderMax;
       r.sliderWrap.style.setProperty('--thumb-color', displayColor);
       r.sliderWrap.style.setProperty('--thumb-glow', displayGlow);
       r.fill.style.width = `calc((100% - 16px) * ${pct} + 8px)`;
@@ -676,6 +748,13 @@ const colorFieldsDefs = [
 ];
 const hexPattern = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i;
 const colorFieldsHolder = document.getElementById('colorFields');
+const colorFieldEls = [];
+
+const originalColors = {
+  F: colorMap.F, E: colorMap.E, D: colorMap.D, C: colorMap.C,
+  B: colorMap.B, A: colorMap.A, S: colorMap.S, SS: colorMap.SS,
+  'SSS-a': getRootVar('--c-SSS-a'), 'SSS-b': getRootVar('--c-SSS-b'),
+};
 
 colorFieldsDefs.forEach(({ key, label }) => {
   const row = document.createElement('div');
@@ -692,9 +771,7 @@ colorFieldsDefs.forEach(({ key, label }) => {
   input.maxLength = 7;
   input.spellcheck = false;
 
-  const initial = key === 'SSS-a' ? getRootVar('--c-SSS-a')
-                : key === 'SSS-b' ? getRootVar('--c-SSS-b')
-                : colorMap[key];
+  const initial = originalColors[key];
   input.value = initial;
   swatch.style.background = initial;
 
@@ -717,6 +794,8 @@ colorFieldsDefs.forEach(({ key, label }) => {
     if (hexPattern.test(v)) apply(v);
   });
 
+  colorFieldEls.push({ key, input, swatch, apply });
+
   row.appendChild(lbl);
   row.appendChild(swatch);
   row.appendChild(input);
@@ -725,6 +804,14 @@ colorFieldsDefs.forEach(({ key, label }) => {
 
 document.getElementById('colorToggle').addEventListener('click', () => {
   document.getElementById('colorPanel').classList.toggle('hidden');
+});
+
+document.getElementById('colorReset').addEventListener('click', () => {
+  colorFieldEls.forEach(({ key, input, apply }) => {
+    const hex = originalColors[key];
+    input.value = hex;
+    apply(hex);
+  });
 });
 </script>
 </body>
