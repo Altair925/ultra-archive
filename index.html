@@ -1,9 +1,9 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ficha de Rangos</title>
+<title>Ultra-Análisis</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -484,13 +484,32 @@
     transition:color .15s ease, border-color .15s ease;
   }
   .color-reset:hover{color:var(--text); border-color:var(--muted-2);}
+
+  .panel-section-title{ margin-top:16px !important; }
+  .hide-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    padding:5px 0;
+  }
+  .hide-row span{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:12px;
+    color:var(--text);
+  }
+
+  /* hide-stats mode: keep the empty track visible, mask the colored progress and the thumb */
+  .card.hide-stats .slider-fill{ opacity:0; }
+  .card.hide-stats .slider-input::-webkit-slider-thumb{ opacity:0; box-shadow:none; }
+  .card.hide-stats .slider-input::-moz-range-thumb{ opacity:0; box-shadow:none; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="masthead">
     <div class="eyebrow">Sistema de clasificación · F — SSS</div>
-    <h1>ULTRA-ANALISIS</h1>
+    <h1>ULTRA-ANÁLISIS</h1>
     <p class="sub">Cinco conjuntos de estadísticas con tope creciente. Cada rango se recalcula en vivo a partir del valor del control deslizante.</p>
   </div>
 
@@ -501,9 +520,12 @@
 
 <button class="color-toggle" id="colorToggle" type="button" aria-label="Ajustes de color" title="Ajustes de color">⚙</button>
 <div class="color-panel hidden" id="colorPanel">
-  <h2>Colores (hex)</h2>
+  <h2>Ocultar estadísticas</h2>
+  <div id="hideStatsFields"></div>
+
+  <h2 class="panel-section-title">Colores (hex)</h2>
   <div id="colorFields"></div>
-  <button type="button" class="color-reset" id="colorReset">Restablecer originales</button>
+  <button type="button" class="color-reset" id="colorReset">Restablecer todo</button>
 </div>
 
 <script>
@@ -524,6 +546,7 @@ const gradeColorVar = {
 const gradeGlow = { S:"rgba(239,91,76,0.5)", SS:"rgba(192,132,252,0.65)", SSS:"rgba(255,46,140,0.5)" };
 const colorMap = { F:"#5c6773", E:"#4a7f95", D:"#2f96a6", C:"#24ab8a", B:"#2ec47a", A:"#f2c230", S:"#ef5b4c", SS:"#c084fc", SSS:"#ff2e8c" };
 const allRefreshers = [];
+const cardControllers = [];
 const shardPoints = [
   "26,10 34,4 30,18",
   "40,8 52,14 42,20",
@@ -682,6 +705,8 @@ groups.forEach((group) => {
   card.appendChild(rowsHolder);
   grid.appendChild(card);
 
+  let hideStats = false;
+
   function letterAt(v) {
     return group.letters[Math.min(v, group.letters.length - 1)];
   }
@@ -701,9 +726,7 @@ groups.forEach((group) => {
 
     rows.forEach((r) => {
       const v = parseInt(r.range.value, 10);
-      r.frac.innerHTML = `<b>${v}</b>/${cap}`;
       const letter = letterAt(v);
-      r.letterEl.textContent = letter;
 
       const ownColor = colorMap[letter];
       const ownGlow = gradeGlow[letter] || 'transparent';
@@ -712,9 +735,20 @@ groups.forEach((group) => {
       const displayGlow = unify ? bestGlow : ownGlow;
       const displayLetter = unify ? bestLetter : letter;
 
-      r.letterEl.style.setProperty('--grade-color', displayColor);
-      r.letterEl.style.setProperty('--grade-glow', displayGlow);
-      r.letterEl.classList.toggle('tier-sss', displayLetter === 'SSS');
+      if (hideStats) {
+        r.frac.innerHTML = `<b>?</b>/?`;
+        r.letterEl.textContent = '???';
+        r.letterEl.style.setProperty('--grade-color', 'var(--muted-2)');
+        r.letterEl.style.setProperty('--grade-glow', 'transparent');
+        r.letterEl.classList.remove('tier-sss');
+      } else {
+        r.frac.innerHTML = `<b>${v}</b>/${cap}`;
+        r.letterEl.textContent = letter;
+        r.letterEl.style.setProperty('--grade-color', displayColor);
+        r.letterEl.style.setProperty('--grade-glow', displayGlow);
+        r.letterEl.classList.toggle('tier-sss', displayLetter === 'SSS');
+      }
+
       r.sliderWrap.classList.toggle('tier-sss', displayLetter === 'SSS');
       r.fill.classList.toggle('tier-sss', displayLetter === 'SSS');
       r.sliderWrap.classList.toggle('is-overflow', sliderMax > cap && v > cap);
@@ -726,6 +760,7 @@ groups.forEach((group) => {
       r.fill.style.setProperty('--fill-color', displayColor);
     });
 
+    card.classList.toggle('hide-stats', hideStats);
     card.style.setProperty('--card-accent', unify ? bestColor : colorMap[group.letters[group.letters.length - 1]]);
     switchLabel.style.setProperty('--switch-color', bestColor);
   }
@@ -733,6 +768,43 @@ groups.forEach((group) => {
   switchInput.addEventListener('change', refreshCard);
   refreshCard();
   allRefreshers.push(refreshCard);
+  cardControllers.push({
+    title: group.title,
+    setHideStats(v) { hideStats = v; refreshCard(); },
+  });
+});
+
+// --- ocultar estadísticas per-table ---
+const hideStatsHolder = document.getElementById('hideStatsFields');
+const hideStatsControls = [];
+
+cardControllers.forEach(({ title, setHideStats }) => {
+  const row = document.createElement('div');
+  row.className = 'hide-row';
+
+  const span = document.createElement('span');
+  span.textContent = title;
+
+  const switchLabel = document.createElement('label');
+  switchLabel.className = 'mini-switch';
+  const input = document.createElement('input');
+  input.type = 'checkbox';
+  input.setAttribute('aria-label', `Ocultar estadísticas de ${title}`);
+  const track = document.createElement('span');
+  track.className = 'track';
+  const knob = document.createElement('span');
+  knob.className = 'knob';
+  switchLabel.appendChild(input);
+  switchLabel.appendChild(track);
+  switchLabel.appendChild(knob);
+
+  input.addEventListener('change', () => setHideStats(input.checked));
+
+  hideStatsControls.push({ input, setHideStats });
+
+  row.appendChild(span);
+  row.appendChild(switchLabel);
+  hideStatsHolder.appendChild(row);
 });
 
 // --- discreet hex color panel ---
@@ -811,6 +883,10 @@ document.getElementById('colorReset').addEventListener('click', () => {
     const hex = originalColors[key];
     input.value = hex;
     apply(hex);
+  });
+  hideStatsControls.forEach(({ input, setHideStats }) => {
+    input.checked = false;
+    setHideStats(false);
   });
 });
 </script>
